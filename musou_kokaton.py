@@ -243,7 +243,7 @@ class Score:
     def __init__(self):
         self.font = pg.font.Font(None, 50)
         self.color = (0, 0, 255)
-        self.value = 400
+        self.value = 1000
         self.image = self.font.render(f"Score: {self.value}", 0, self.color)
         self.rect = self.image.get_rect()
         self.rect.center = 100, HEIGHT-50
@@ -427,41 +427,32 @@ def main():
             exps.add(Explosion(bomb, 50))  # 爆発エフェクト
             score.value += 1  # 1点アップ
 
-        for bomb in pg.sprite.spritecollide(bird, bombs, True):
-            if bird.state=="hyper":
-                score.value+=1
-            else:  
-                # こうかとんと衝突した爆弾リスト
-                bird.change_img(8, screen)  # こうかとん悲しみエフェクト
-                score.update(screen)
-                pg.display.update()
-                time.sleep(2)
-                return
-        for bomb in pg.sprite.groupcollide(bombs, shields, True, False).keys():
-            exps.add(Explosion(bomb, 50))
-
-        for bomb in pg.sprite.spritecollide(bird, bombs, True):  # こうかとんと衝突した爆弾リスト
-            bird.change_img(8, screen)  # こうかとん悲しみエフェクト
-            score.update(screen)
-            pg.display.update()
-            time.sleep(2)
-            return
-        
-        # # if len(gravity_group) > 0:
-        # #     bombs = [] 
-
         # bombs = [bomb for bomb in bombs if bomb is not None]
-        # beams = [beam for beam in beams if beam is not None]
         gravities.update()
         gravities.draw(screen)
 
-            bird.change_img(8, screen)# こうかとん悲しみエフェクト
-            life.num -=1
-            if  life.num<=0:#残機数が0になったら終了
-                score.update(screen)
-                life.update(screen)
-                pg.display.update()
-                time.sleep(2)
+        for bomb in pg.sprite.groupcollide(bombs, shields, True, False).keys():
+            exps.add(Explosion(bomb, 50))
+
+        # こうかとんと爆弾の衝突判定
+        for bomb in pg.sprite.spritecollide(bird, bombs, True):
+            if bird.state == "hyper":
+                score.value += 1
+            else:  
+                bird.change_img(8, screen)  # こうかとん悲しみエフェクト
+                life.num -= 1               # 残機-1
+                
+                if life.num <= 0:           # 残機数が0になったらゲーム終了
+                    score.update(screen)
+                    life.update(screen)
+                    pg.display.update()
+                    time.sleep(2)
+                    return
+                else:                       # まだ残機がある場合は画面を更新して少し待つ
+                    score.update(screen)
+                    life.update(screen)
+                    pg.display.update()
+                    time.sleep(1)
                 return
             
         bird.update(key_lst, screen)
